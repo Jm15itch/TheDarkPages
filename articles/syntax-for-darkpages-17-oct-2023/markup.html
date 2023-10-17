@@ -1,0 +1,27 @@
+<html>
+    <head> 
+        <title>The Dark Pages</title>
+        <link rel="stylesheet" href="/main.css">
+    </head>
+    <body>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Torre_de_H%C3%A9rcules%2C_La_Coru%C3%B1a%2C_Espa%C3%B1a%2C_2015-09-24%2C_DD_12-15_PAN.JPG/1024px-Torre_de_H%C3%A9rcules%2C_La_Coru%C3%B1a%2C_Espa%C3%B1a%2C_2015-09-24%2C_DD_12-15_PAN.JPG">
+        <h1>Syntax tutorial for Dark Pages</h1>
+        <p>The Dark Pages tries to make writing articles as simple as possible given the restraints of the web technologies we try to rely on. Our web server is entirely made from rust/hyper and we rely heavily on minimising the bandwidth as much as we can</P>
+        <p>We have <hl>developed</hl> a schema for articles that is consistent, easy to understand, and compact. This article will explain how to write articles for the Dark Pages.</p>
+        <code>
+            fn main() -> i32 {
+                println!("Hello world!");
+            }
+        </code>
+        <h2>Article File Layout</h2>
+        <p>So for each article, we have a dedicated folder with the directory name for the article (e.g "syntax-tutorial-17-oct-2023"). This name is only used for the url and internal usage.</p>
+        <p>Within the article folder, we have two files: data.toml and markup.html. data.toml is just a basic toml file that describes the article to the server program so it can list it. markup.html is the html code for the article's page</p>
+        <p>Here is an example of data.toml:</p>
+        <code>
+            name = "Epic article for dark pages!"<br>
+            author = "Your Name"<br>
+            date = "unix timestamp (https://unixtime.org/)"<br>
+            tags = "epic|article|something|woah"
+        </code>
+    </body>
+</html>
