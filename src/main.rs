@@ -24,13 +24,15 @@ struct Article {
 struct Cache {
     data: HashMap<String, Article>,
     directory: String, // The JSON data to be sent out
+    robots: String, // Robots directory
 }
 
 static GLOBAL_CACHE: Lazy<Cache> = Lazy::new(|| {
     println!("Generating cache now...");
     let mut directory: String = "[".to_string();
+    let mut robots_dir: String = "".to_string();
     let data = HashMap::new();
-    for article in WalkDir::new("./articles").into_iter().filter_map(|e| e.ok()) {
+    for article in WalkDir::new("./articles").min_depth(1).into_iter().filter_map(|e| e.ok()) {
         let mut article_data: Article = Article::default();
         article_data.dirname = article.file_name().to_string_lossy().to_string();
         let mut passes = 0;
@@ -60,6 +62,7 @@ static GLOBAL_CACHE: Lazy<Cache> = Lazy::new(|| {
         } else {
             directory = directory + format!("{{\"name\":\"{}\",\"dirname\":\"{}\",\"author\":\"{}\",\"date\":\"{}\",\"tags\":\"{}\"}},", article_data.1.name, article_data.1.dirname, article_data.1.author, article_data.1.date, article_data.1.tags).as_str();
         }
+        robots_dir = robots_dir + format!("<a href=\"/a/{}\"><h2>{}</h2></a>", article_data.1.dirname, article_data.1.dirname).as_str();
     }
 
     directory = directory + "]";
@@ -67,11 +70,17 @@ static GLOBAL_CACHE: Lazy<Cache> = Lazy::new(|| {
     Cache {
         data,
         directory,
+        robots: robots_dir,
     }
 });
 
+
+
 async fn get_article(APath(title): APath<String>) -> Html<String> {
-    return Html(GLOBAL_CACHE.data.pin().get(&title).unwrap_or(&Article::default()).html.clone());
+    return Html(
+        format!("<html><head><title>The Dark Pages</title><link rel=\"stylesheet\" href=\"/main.css\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body>{}</body></html>",
+            GLOBAL_CACHE.data.pin().get(&title).unwrap_or(&Article::default()).html.clone())
+    );
 }
 
 async fn article_directory() -> &'static str {
@@ -88,6 +97,12 @@ async fn css() -> &'static str {
 
 async fn js() -> &'static str {
     include_str!("www/main.js")
+}
+
+async fn robots_dir() -> Html<String>{
+    return Html(
+        format!("<html><h1>Hey Robots!</h1><h4>Here is a nice feast of data for you.</h4>{}</html>",GLOBAL_CACHE.robots)
+    );
 }
 
 async fn robots() -> &'static str {
@@ -108,7 +123,8 @@ async fn main() {
         .route("/a/all", get(article_directory))
         .route("/a/:title", get(get_article))
         // SEO enhancements
-        .route("/robots.txt", get(robots));
+        .route("/robots.txt", get(robots))
+        .route("/robots_directory", get(robots_dir));
 
     // run our app with hyper, listening globally on port 3000
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
